@@ -1,0 +1,9 @@
+// cordis.patch.yml — 声明本插件在配置树中的位置
+- insert:
+    - id: token-guard
+      name: dsh-token-guard
+      config:
+        dailyBudgetCny: 0
+        dailyBudgetTokens: 0
+        thresholds: [50, 80, 100]
+        notifyLevel: normal

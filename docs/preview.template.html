@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<!--
+  dsh-token-guard 输出预览
+
+  ⚠️ 这不是真机 dsh 截图。
+     内容由真实会话数据（237 条 usage）跑出的命令输出渲染，
+     套上接近 dsh Web UI 的外观，用于展示「输出长什么样」。
+     真机截图待安装 dsh 后补。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>dsh-token-guard · 输出预览</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #1f9e75;
+    --warn: #d29922; --danger: #f85149; --blue: #58a6ff;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 24px;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; }
+
+  .banner {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #1f2937; border: 1px solid #374151;
+    border-left: 3px solid var(--warn);
+    border-radius: 8px; padding: 12px 14px; margin-bottom: 28px;
+    font-size: 12.5px; color: #c9d1d9;
+  }
+  .banner b { color: var(--warn); }
+
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  .sub { color: var(--dim); font-size: 13px; margin-bottom: 30px; }
+
+  h2 {
+    font-size: 13px; font-weight: 600; color: var(--dim);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin: 34px 0 12px;
+  }
+
+  /* 终端 */
+  .term {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; margin-bottom: 18px;
+  }
+  .term-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px; background: #010409;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .term-title { color: var(--dim); font-size: 12px; margin-left: 6px; }
+  .term-body {
+    padding: 16px 18px; font-family: var(--mono);
+    font-size: 13px; line-height: 1.75; white-space: pre;
+    overflow-x: auto;
+  }
+  .cmd { color: var(--blue); }
+  .cost { color: var(--text); font-weight: 600; }
+  .dim { color: var(--dim); }
+  .hi  { color: var(--accent); }
+  .wn  { color: var(--warn); }
+  .dg  { color: var(--danger); }
+
+  /* 面板 */
+  .panels { display: flex; gap: 16px; flex-wrap: wrap; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px; min-width: 260px; flex: 1;
+  }
+  .card h3 { font-size: 13px; margin: 0 0 14px; color: var(--dim); font-weight: 500; }
+  .ring-row { display: flex; align-items: center; gap: 14px; }
+  .big { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+  .pct { color: var(--dim); font-size: 13px; margin-left: 4px; }
+  .tier { color: var(--dim); font-size: 12.5px; }
+  .note {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px; color: var(--dim);
+  }
+  .note b { color: var(--warn); font-weight: 500; }
+
+  .stat { display: flex; justify-content: space-between; padding: 5px 0; font-size: 12.5px; }
+  .stat span:last-child { font-family: var(--mono); }
+
+  footer {
+    margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border);
+    color: var(--dim); font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="banner">
+    <span>⚠</span>
+    <div><b>输出预览，非真机截图。</b>内容由本机真实会话数据（<span id="recs">237</span> 条 usage 记录）跑出的命令输出渲染，
+    用于展示输出形态。dsh Web UI 的实际外观可能不同。</div>
+  </div>
+
+  <h1>dsh-token-guard</h1>
+  <div class="sub">给 DeepSeek Harness 用的每日token 预算管控 —— 下面全部是真实运行输出</div>
+
+  <h2>命令输出（2026-10-03 · 本机真实数据）</h2>
+
+  <div class="term">
+    <div class="term-head">
+      <div class="dot" style="background:#ff5f57"></div>
+      <div class="dot" style="background:#febc2e"></div>
+      <div class="dot" style="background:#28c840"></div>
+      <div class="term-title">/budget why</div>
+    </div>
+    <div class="term-body" id="term-why"></div>
+  </div>
+
+  <div class="term">
+    <div class="term-head">
+      <div class="dot" style="background:#ff5f57"></div>
+      <div class="dot" style="background:#febc2e"></div>
+      <div class="dot" style="background:#28c840"></div>
+      <div class="term-title">历史趋势</div>
+    </div>
+    <div class="term-body" id="term-history"></div>
+  </div>
+
+  <h2>客户端面板（设置页）</h2>
+  <div class="panels">
+    <div class="card">
+      <h3>Token 预算</h3>
+      <div class="ring-row">
+        <svg width="46" height="46" viewBox="0 0 46 46">
+          <circle cx="23" cy="23" r="18" fill="none" stroke="#21262d" stroke-width="4"/>
+          <circle cx="23" cy="23" r="18" fill="none" stroke="#f85149" stroke-width="4"
+                  stroke-dasharray="113 113" stroke-dashoffset="0" transform="rotate(-90 23 23)" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="big">¥3.07<span class="pct">154%</span></div>
+          <div class="tier">已超每日预算 · 空闲时段</div>
+        </div>
+      </div>
+      <div class="note">
+        已超限，<b>可 /budget history 3</b> 查看趋势
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>当日构成</h3>
+      <div class="stat"><span class="dim">未缓存输入</span><span>672.9k</span></div>
+      <div class="stat"><span class="dim">缓存命中</span><span>6.44M</span></div>
+      <div class="stat"><span class="dim">输出</span><span>158.6k</span></div>
+      <div class="stat"><span class="dim">轮次</span><span>119</span></div>
+      <div class="note">
+        缓存命中 <b>89%</b>。命中率低于 70% 时会提示固定模型、避免中途改工具 Schema。
+      </div>
+    </div>
+  </div>
+
+  <footer id="meta"></footer>
+</div>
+
+<script>
+const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))
+
+function render(id, text) {
+  const el = document.getElementById(id)
+  const lines = esc(text).split('\n')
+  el.innerHTML = lines.map((l) => {
+    let h = l
+    // 进度条染色
+    if (/^\[#+-*\]\s+\d+%/.test(l)) {
+      const p = l.match(/(\d+)%/)
+      const cls = p && +p[1] >= 100 ? 'dg' : p && +p[1] >= 80 ? 'wn' : 'hi'
+      h = h.replace(/(\[#+)(-*\]\s+\d+%)/, (m, a, b) =>
+        `<span class="${cls}">${a}</span><span class="dim">${b}</span>`)
+    }
+    // 金额
+    h = h.replace(/(¥[\d.]+)/g, '<span class="cost">$1</span>')
+    // 超限/警告标记
+    if (/已超|超限/.test(h)) h = h.replace(/(已超限|超限)/g, '<span class="dg">$1</span>')
+    else if (/接近|警告/.test(h)) h = h.replace(/(接近每日预算|警告)/g, '<span class="wn">$1</span>')
+    return h
+  }).join('\n')
+}
+
+// ★ 数据内联：file:// 下 fetch 会被 CORS 拦掉，终端会渲染成空白
+const d = JSON.parse(document.getElementById('preview-data').textContent)
+
+document.getElementById('recs').textContent = d.records
+render('term-why', d.outputs.why)
+render('term-history', d.outputs.history)
+document.getElementById('meta').textContent =
+  `数据来源：本机 ~/.dsh/sessions（${d.files} 个会话文件，${d.records} 条 usage 记录） · 生成于 ${d.generatedAt}`
+</script>
+</body>
+</html>

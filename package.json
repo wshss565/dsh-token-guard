@@ -1,0 +1,70 @@
+{
+  "name": "dsh-token-guard",
+  "version": "0.4.0",
+  "description": "给 DeepSeek Harness 用的每日token 预算管控：设上限、超阈值提醒、时段感知、关闭所有任务",
+  "type": "module",
+  "main": "index.mjs",
+  "license": "MIT",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek",
+    "token",
+    "budget",
+    "cost-control",
+    "llm-cost",
+    "guard",
+    "circuit-breaker"
+  ],
+  "engines": {
+    "dsh": ">=0.1.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-primitives"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "node --test --test-timeout=30000 \"test/**/*.test.mjs\"",
+    "dump": "node tools/dump-usage.mjs",
+    "preview": "node tools/build-preview.mjs",
+    "preview:ui": "node tools/build-ui-preview.mjs"
+  },
+  "exports": {
+    ".": "./index.mjs",
+    "./attribution": "./src/attribution.mjs",
+    "./collector": "./src/collector.mjs",
+    "./commands": "./src/commands.mjs",
+    "./guard": "./src/guard.mjs",
+    "./ledger": "./src/ledger.mjs",
+    "./notifier": "./src/notifier.mjs",
+    "./pricing": "./src/pricing.mjs",
+    "./threshold": "./src/threshold.mjs",
+    "./client": "./client/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.mjs",
+    "client/index.mjs",
+    "cordis.patch.yml",
+    "src",
+    "tools",
+    "test",
+    "LICENSE",
+    "README.md",
+    "docs/COMPATIBILITY.md",
+    "docs/preview.png",
+    "docs/ui-preview.png",
+    "docs/preview.template.html",
+    "docs/ui-preview.template.html"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1"
+  }
+}

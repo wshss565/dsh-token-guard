@@ -1,0 +1,21 @@
+node_modules/
+*.log
+.DS_Store
+
+# 账本可能含 token 数与成本，不应进版本库
+token-guard/
+*.jsonl
+export.jsonl
+
+# 预览图的中间产物（.png 与 .template.html 要进库，由 .html现场生成）
+docs/preview.html
+docs/preview-data.json
+docs/ui-preview.html
+docs/ui-preview.data.json
+docs/alert-data.json
+
+# 打包产物
+*.tgz
+
+# 内存/工作区
+.workbuddy/

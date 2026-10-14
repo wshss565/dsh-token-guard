@@ -1,0 +1,22 @@
+# 统一换行，避免 Windows 检出后变成 CRLF 导致 CI 差异或脚本异常
+
+* text=auto eol=lf
+
+# 明确的文件类型
+*.mjs  text eol=lf
+*.js   text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+*.html text eol=lf
+*.css  text eol=lf
+*.ts   text eol=lf
+
+# 二进制，禁止换行转换
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.tgz  binary

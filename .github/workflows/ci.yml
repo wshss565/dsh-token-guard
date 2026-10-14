@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: 测试 (Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # 22.15+ 是硬性要求：用到 node:zlib 的 zstd 支持
+        os: [ubuntu-latest, windows-latest]
+        node: ['22.15', '22.x', '24.x']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: 打印环境
+        run: |
+          node -v
+          npm -v
+
+      # 插件零运行时依赖，这一步能提前发现 peerDependencies 写错等问题
+      - name: 安装
+        run: npm install --no-package-lock
+
+      - name: 测试
+        run: npm test
+
+      - name: 打包自检
+        run: |
+          npm pack --dry-run
+          # exports 里声明的文件必须都存在，否则安装方 import 会失败
+          node -e "
+            const pkg = require('./package.json');
+            const fs = require('fs');
+            const missing = Object.entries(pkg.exports || {})
+              .map(([k, v]) => [k, v])
+              .filter(([, v]) => !fs.existsSync(String(v).replace('./', '')));
+            if (missing.length) {
+              console.error('exports 指向缺失文件:');
+              for (const [k, v] of missing) console.error('  ', k, '->', v);
+              process.exit(1);
+            }
+            console.log('exports 全部有效');
+          "
+
+  selfcheck:
+    name: 插件自检
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.15'
+
+      # 模拟 dsh 宿主的最小 ctx，验证 apply 不崩、命令能注册
+      - name: 模拟宿主装配
+        run: |
+          node --input-type=module -e "
+            const mod = await import('./index.mjs');
+            const reg = [];
+            const disposers = [];
+            const ctx = {
+              commands: { register: (c) => reg.push(c) },
+              get: () => undefined,
+              on: () => () => {},
+              effect: (fn) => { const d = fn(); if (typeof d === 'function') disposers.push(d); return d },
+            };
+            mod.apply(ctx, {});
+            if (!reg.length) { console.error('未注册任何命令'); process.exit(1) }
+            console.log('已注册命令:', reg.map((c) => c.name).join(', '));
+            const r = await reg[0].handler({ rawInput: 'help' });
+            if (r.kind !== 'success' || !r.text) { console.error('help 无输出'); process.exit(1) }
+            for (const d of disposers) { try { d() } catch {} }
+            console.log('装配与卸载正常');
+          "

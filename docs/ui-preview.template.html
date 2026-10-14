@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<!--
+  客户端面板交互预览 —— 含「关闭所有任务」流程
+  数据来自 buildAlert() 真实输出（非手写），只用假 plan 模拟 HTTP 返回。
+  ⚠️ 非dsh 真机渲染：客户端依赖 dsh 注入的 ctx.slots 与 React。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>dsh-token-guard · 面板预览</title>
+<style>
+  :root{
+    --bg:#0d1117;--panel:#161b22;--panel2:#1c2128;--border:#30363d;
+    --text:#e6edf3;--dim:#8b949e;--faint:#6e7681;
+    --ok:#1f9e75;--warn:#d29922;--alert:#ba7517;--over:#f85149;
+    --mono:'Cascadia Code','Consolas',monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);padding:28px 20px;
+    font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.6}
+  .wrap{max-width:980px;margin:0 auto}
+  .banner{background:#1f2937;border:1px solid #374151;border-left:3px solid var(--warn);
+    border-radius:8px;padding:11px 14px;margin-bottom:24px;font-size:12.5px;color:#c9d1d9}
+  .banner b{color:var(--warn)}
+  h1{font-size:21px;font-weight:600;margin:0 0 4px}
+  .sub{color:var(--dim);font-size:13px;margin-bottom:24px}
+  h2{font-size:12px;font-weight:600;color:var(--faint);text-transform:uppercase;
+    letter-spacing:.06em;margin:30px 0 12px}
+
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{background:var(--panel);border:1px solid var(--border);color:var(--dim);
+    border-radius:7px;padding:7px 13px;font-size:12.5px;cursor:pointer;transition:.12s}
+  .tab:hover{border-color:#484f58;color:var(--text)}
+  .tab[aria-selected="true"]{background:var(--panel2);border-color:#58a6ff;color:var(--text)}
+
+  .chat{background:#010409;border:1px solid var(--border);border-radius:10px;
+    padding:13px;margin-bottom:12px;font-size:13.5px;color:var(--dim)}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:11px;
+    padding:13px;max-width:400px}
+  .p-top{display:flex;align-items:center;gap:10px}
+  .p-cost{font-size:14px;font-weight:500}
+  .p-pct{font-size:12px;opacity:.6;margin-left:4px}
+  .p-tier{font-size:12px;opacity:.7;margin-top:1px}
+  .btn{background:transparent;border:1px solid var(--border);color:var(--text);
+    border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;transition:.12s}
+  .btn:hover{background:#21262d}
+  .btn.danger{border-color:var(--over);background:var(--over);color:#fff}
+  .btn.danger:hover{filter:brightness(1.1)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  .adv{font-size:12px;color:var(--dim);display:flex;gap:6px;align-items:baseline;margin-top:2px}
+  .adv i{color:var(--ok);font-style:normal;flex-shrink:0}
+
+  .danger-zone{margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
+  .danger-hint{font-size:11px;color:var(--faint);margin-top:4px;text-align:center}
+
+  .confirm{margin-top:10px;padding:11px;border-radius:8px;
+    border:1px solid var(--over);background:rgba(248,81,73,.06)}
+  .confirm-sum{font-size:12.5px;line-height:1.6}
+  .agents{margin-top:8px;max-height:132px;overflow:auto;padding:8px;
+    background:rgba(128,128,128,.07);border-radius:6px}
+  .arow{display:flex;gap:8px;align-items:baseline;font-size:12px;line-height:1.9}
+  .amark{width:10px;flex-shrink:0}
+  .aid{font-family:var(--mono);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .anote{color:var(--faint);font-size:11px;flex-shrink:0}
+  .cwarn{font-size:11.5px;color:var(--dim);margin-top:7px}
+  .cacts{display:flex;gap:8px;justify-content:flex-end;margin-top:9px}
+
+  .result{margin-top:10px;padding:11px;border-radius:8px;font-size:12px;line-height:1.7;
+    border:1px solid var(--ok);background:rgba(31,158,117,.07)}
+  .result.mid{border-color:var(--warn);background:rgba(210,153,34,.07)}
+  .result b{font-weight:500}
+  .result .dim{color:var(--dim)}
+  .result .f{color:var(--faint);margin-top:4px}
+  .result .w{color:var(--warn);margin-top:4px}
+
+  .chk{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;
+    opacity:.75;margin-top:8px}
+  .chk input{accent-color:#58a6ff;width:14px;height:14px}
+  .note{font-size:12px;color:var(--faint);margin-top:12px;padding-top:11px;
+    border-top:1px solid var(--border);line-height:1.7}
+  .note b{color:#58a6ff;font-weight:500}
+  .flow{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:8px;
+    white-space:pre;overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner"><span>⚠</span><div>
+    <b>UI 形态预览，非 dsh 真机渲染。</b>客户端依赖 dsh 注入的 <code>ctx.slots</code> 与 React，无法独立运行。
+    数字与处置建议来自 <code>buildAlert()</code> 真实输出，任务列表为模拟数据。
+  </div></div>
+
+  <h1>dsh-token-guard · 面板</h1>
+  <div class="sub">挂在 <code>conversation.input.dock</code>（输入框上方）· 切换查看状态与关闭流程</div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab" data-v="ok" aria-selected="true">正常 24%</button>
+    <button class="tab" data-v="warn" aria-selected="false">警告 84%</button>
+    <button class="tab" data-v="over" aria-selected="false">超限 112%</button>
+    <button class="tab" data-v="confirm" aria-selected="false">关闭确认</button>
+    <button class="tab" data-v="done" aria-selected="false">执行结果</button>
+  </div>
+
+  <div class="chat">把 dsh-token-guard 挂在 <code>conversation.input.dock</code>，不用进设置页就能看到余量。</div>
+  <div id="view"></div>
+
+  <div class="note" id="note"></div>
+  <h2>关闭流程</h2>
+  <div class="flow" id="flow"></div>
+</div>
+
+<script id="alert-data" type="application/json">__DATA__</script>
+<script>
+const D = JSON.parse(document.getElementById('alert-data').textContent)
+
+// 模拟 GET /plan 的返回
+const FAKE_PLAN = {
+  ok: true,
+  agents: [
+    { id: 'session-a1b2c3-long-running-refactor', status: 'running', idle: false, stoppable: true, skipped: false, reason: null },
+    { id: 'session-d4e5f6-writing-tests', status: 'running', idle: false, stoppable: true, skipped: false, reason: null },
+    { id: 'sub-agent-child-xyz', status: 'running', idle: false, stoppable: false, skipped: true,
+      reason: '子 agent 由父级管理，宿主会拒绝（agent-busy）' },
+    { id: 'session-g7h8i9-idle-done', status: 'idle', idle: true, stoppable: true, skipped: false, reason: null },
+  ],
+  summary: { total: 4, stoppable: 3, skipped: 1, running: 3, idle: 1 },
+}
+
+const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))
+const money = n => '¥' + Number(n).toFixed(2)
+const colorOf = (p, over) => over || p >= 100 ? 'var(--over)' : p >= 80 ? 'var(--alert)' : p >= 50 ? 'var(--warn)' : 'var(--ok)'
+
+function ring(p, color, size = 34) {
+  const r = size / 2 - 3, c = 2 * Math.PI * r
+  const f = Math.max(0, Math.min(1, p / 100))
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="rgba(128,128,128,.2)" stroke-width="3"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="3"
+      stroke-dasharray="${c*f} ${c}" stroke-linecap="round" transform="rotate(-90 ${size/2} ${size/2})"/>
+  </svg>`
+}
+
+function head(a) {
+  const c = colorOf(a.pct, a.overLimit)
+  return `<div class="p-top">
+    ${ring(a.pct, c)}
+    <div style="flex:1;min-width:0">
+      <div class="p-cost">${money(a.cost)}<span class="p-pct">${a.pct}%</span></div>
+      <div class="p-tier">${a.tier === 'peak' ? '高峰时段' : '空闲时段'}</div>
+    </div>
+    <button class="btn">任务</button>
+  </div>`
+}
+
+function advices(a) {
+  const others = (a.remediation || []).filter(r => r.id !== 'stop-all' && r.action !== null)
+  return others.map(r => `<div class="adv"><i>·</i><span>${esc(r.hint || r.label)}</span></div>`).join('')
+}
+
+function dangerZone(a) {
+  const s = (a.remediation || []).find(r => r.id === 'stop-all')
+  if (!s) return ''
+  return `<div class="danger-zone">
+    <button class="btn danger" style="width:100%">${esc(s.label)}</button>
+    <div class="danger-hint">${esc(s.hint)}</div>
+  </div>`
+}
+
+function confirmBox() {
+  const p = FAKE_PLAN
+  const skipRun = p.agents.filter(a => a.skipped && !a.idle).length
+  const rows = p.agents.map(a => {
+    const mark = a.skipped ? '×' : a.idle ? '·' : '○'
+    const col = a.skipped ? 'var(--dim)' : a.idle ? 'var(--faint)' : 'var(--over)'
+    return `<div class="arow">
+      <span class="amark" style="color:${col}">${mark}</span>
+      <span class="aid">${esc(a.id)}</span>
+      <span class="anote">${esc(a.reason ?? a.status)}</span>
+    </div>`
+  }).join('')
+  return `<div class="panel" style="max-width:440px">
+    ${head(D.over)}
+    ${advices(D.over)}
+    <div class="confirm">
+      <div class="confirm-sum">将停止 <b>${p.summary.running - skipRun}</b> 个运行中任务${
+        p.summary.skipped ? `，跳过 ${p.summary.skipped} 个子 agent` : ''}${
+        p.summary.idle ? `，${p.summary.idle} 个空闲不动` : ''}。</div>
+      <div class="agents">${rows}</div>
+      <div class="cwarn">会清空排队中尚未执行的任务。会话日志会保留，之后可用 resume 恢复。</div>
+      <div class="cacts">
+        <button class="btn">取消</button>
+        <button class="btn danger">确认关闭全部</button>
+      </div>
+    </div>
+    <label class="chk"><input type="checkbox" checked>超阈值时发浏览器通知</label>
+  </div>`
+}
+
+function resultBox() {
+  return `<div class="panel" style="max-width:440px">
+    ${head(D.over)}
+    <div class="result">
+      <b>已停止 2 个任务</b>
+      <div class="dim">1 个已是空闲，未操作</div>
+      <div class="dim">1 个子 agent 跳过</div>
+      <div class="f">会话日志已保留，可用 resume 恢复。</div>
+      <button class="btn" style="margin-top:7px">知道了</button>
+    </div>
+    <label class="chk"><input type="checkbox" checked>超阈值时发浏览器通知</label>
+  </div>`
+}
+
+const NOTES = {
+  ok: '正常状态。只有余量与通知开关，无破坏性入口。',
+  warn: '越过 80% 警告档。出现「查看有哪些任务在跑」——只读预览，不执行任何操作。',
+  over: '超限。红色余量环 + 底部红色按钮。<b>按钮不直接执行</b>，先展开预览。',
+  confirm: '预览面板。列出每个 agent 的状态，明确标出哪些会停、哪些跳过、哪些不动，用户二次确认。',
+  done: '执行结果。区分「已停止 / 空闲未操作 / 子 agent 跳过 / 失败」，并说明会话日志已保留。',
+}
+
+const VIEWS = {
+  ok:   () => `<div class="panel">${head(D.ok)}${advices(D.ok)}<label class="chk"><input type="checkbox">超阈值时发浏览器通知</label></div>`,
+  warn: () => `<div class="panel">${head(D.warn)}${advices(D.warn)}<label class="chk"><input type="checkbox">超阈值时发浏览器通知</label></div>`,
+  over: () => `<div class="panel">${head(D.over)}${advices(D.over)}${dangerZone(D.over)}<label class="chk"><input type="checkbox" checked>超阈值时发浏览器通知</label></div>`,
+  confirm: confirmBox,
+  done: resultBox,
+}
+
+const FLOW = `1. 超限 → buildAlert() 返回 remediation[]，stop-all 标记 destructive:true
+2. 渲染红色按钮，但onClick 不执行 —— 先 GET /api/token-guard/plan
+3. 展示 agent 列表：○ 可停止 · × 子 agent 跳过 · · 空闲不动
+4. 用户点「确认关闭全部」→ GET /api/token-guard/stop?confirm=true&dryRun=false
+5. 宿主 executeStop() 逐个 cancel({kind:'user'}, {keepInbox:false})
+6. await whenIdle()（3s 上限）→ 返回逐个结果
+7. 客户端展示结果；未落定时提示「可能仍在收尾」`
+
+let cur = 'ok'
+const view = document.getElementById('view')
+const draw = () => {
+  view.innerHTML = VIEWS[cur]()
+  document.getElementById('note').innerHTML = NOTES[cur]
+  document.querySelectorAll('.tab').forEach(t =>
+    t.setAttribute('aria-selected', String(t.dataset.v === cur)))
+}
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('.tab'); if (!b) return
+  cur = b.dataset.v; draw()
+})
+document.getElementById('flow').textContent = FLOW
+draw()
+</script>
+</body>
+</html>
