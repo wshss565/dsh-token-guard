@@ -438,27 +438,36 @@ tools/build-preview.mjs  生成输出预览
 
 代码层面已完成，剩下的是**只能靠真机确认**的部分。
 
-### 1. 建仓与元数据
+### 1. 建仓与推送
 
-仓库已初始化（单次提交），推之前需要：
-
-```bash
-# 1. 在GitHub 上新建空仓库（不要勾选 README/.gitignore），然后：
-git remote add origin https://github.com/<你的用户名>/dsh-token-guard.git
-git push -u origin main
-```
-
-推送后补 `package.json` 的元数据并再提交一次：
+仓库已初始化（分支 `main`）。在 GitHub 上新建**空仓库**（不要勾选 README / .gitignore / License），然后一条命令完成推送：
 
 ```bash
-npm pkg set repository.type=git
-npm pkg set repository.url=https://github.com/<用户名>/dsh-token-guard.git
-npm pkg set bugs.url=https://github.com/<用户名>/dsh-token-guard/issues
-npm pkg set homepage=https://github.com/<用户名>/dsh-token-guard#readme
+node tools/setup-repo.mjs <你的GitHub用户名>            # HTTPS 推送（会弹浏览器登录）
+node tools/setup-repo.mjs <你的GitHub用户名> --ssh      # SSH 推送（需先配置密钥）
+node tools/setup-repo.mjs <你的GitHub用户名> --dry-run # 只预览，不做任何改动
 ```
 
-> 之所以不预填占位地址：`wshss565/dsh-token-guard` 这类字符串极易在复制粘贴时
-> 被当成真实地址发出去，宁可留空并在文档里写明要填什么。
+脚本会自动填 `package.json` 元数据、替换 README 徽章地址、设置 remote、提交并推送。
+
+#### 若要用 SSH
+
+```bash
+# 1. 生成密钥（回车接受默认路径，会问 passphrase，可留空）
+ssh-keygen -t ed25519 -C "你的邮箱"
+
+# 2. 复制公钥
+cat ~/.ssh/id_ed25519.pub
+```
+
+把输出粘到 **GitHub → Settings → SSH and GPG keys → New SSH key**，然后验证：
+
+```bash
+ssh -T git@github.com
+# 成功时会显示：Hi <用户名>! You've successfully authenticated...
+```
+
+看到这行再推送，就不会卡在 `Permission denied (publickey)`。
 
 - 打 **`dsh-plugin`** topic —— 官方靠这个标签做插件发现，漏了等于没发布
 - 仓库描述建议：`给 DeepSeek Harness 用的每日 token 预算管控：设上限、超阈值提醒、时段感知、超预算关闭任务`
