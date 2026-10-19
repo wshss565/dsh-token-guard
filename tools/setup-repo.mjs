@@ -25,14 +25,21 @@ const root = join(here, '..')
 
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
+// 协议：--ssh 用SSH 地址，--https 用 HTTPS（默认）
+const useSsh = args.includes('--ssh')
 const user = args.find((a) => !a.startsWith('--'))
 
 if (!user) {
-  console.log(`用法：node tools/setup-repo.mjs <github-用户名> [--dry-run]
+  console.log(`用法：node tools/setup-repo.mjs <github-用户名> [--ssh] [--dry-run]
+
+选项：
+  --ssh       用 SSH 地址（git@github.com:user/repo.git），需先配置 SSH 密钥
+  --dry-run   只预览，不做任何实际改动
 
 示例：
-  node tools/setup-repo.mjs octocat
-  node tools/setup-repo.mjs octocat --dry-run`)
+  node tools/setup-repo.mjs octocat --dry-run     预览（HTTPS）
+  node tools/setup-repo.mjs octocat                HTTPS 推送
+  node tools/setup-repo.mjs octocat --ssh          SSH 推送`)
   process.exit(1)
 }
 
@@ -42,7 +49,9 @@ if (!/^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(user)) {
 }
 
 const REPO = 'dsh-token-guard'
-const REMOTE = `https://github.com/${user}/${REPO}.git`
+const REMOTE = useSsh
+  ? `git@github.com:${user}/${REPO}.git`
+  : `https://github.com/${user}/${REPO}.git`
 const TAG = 'v0.4.0'
 
 const run = (cmd, argv, opts = {}) => {
@@ -56,6 +65,7 @@ console.log(`配置仓库：${user}/${REPO}\n`)
 console.log('1/5  package.json 元数据')
 const pkgPath = join(root, 'package.json')
 const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
+// npm 仓库地址始终用 HTTPS 协议（浏览器可点击），与 git remote 的协议无关
 pkg.repository = { type: 'git', url: `https://github.com/${user}/${REPO}.git` }
 pkg.bugs = { url: `https://github.com/${user}/${REPO}/issues` }
 pkg.homepage = `https://github.com/${user}/${REPO}#readme`

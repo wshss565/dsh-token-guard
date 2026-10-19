@@ -1,8 +1,7 @@
-[![CI](https://github.com/your-name/dsh-token-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/your-name/dsh-token-guard/actions/workflows/ci.yml)
+[![CI](https://github.com/wshss565/dsh-token-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/wshss565/dsh-token-guard/actions/workflows/ci.yml)
 [![node](https://img.shields.io/badge/node-%3E%3D22.15-5FA04E)](https://nodejs.org)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-<!-- 上面的徽章地址里your-name 会在 node tools/setup-repo.mjs 执行时替换成真实用户名 -->
 
 # dsh-token-guard
 
@@ -458,7 +457,7 @@ npm pkg set bugs.url=https://github.com/<用户名>/dsh-token-guard/issues
 npm pkg set homepage=https://github.com/<用户名>/dsh-token-guard#readme
 ```
 
-> 之所以不预填占位地址：`your-name/dsh-token-guard` 这类字符串极易在复制粘贴时
+> 之所以不预填占位地址：`wshss565/dsh-token-guard` 这类字符串极易在复制粘贴时
 > 被当成真实地址发出去，宁可留空并在文档里写明要填什么。
 
 - 打 **`dsh-plugin`** topic —— 官方靠这个标签做插件发现，漏了等于没发布

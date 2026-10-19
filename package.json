@@ -66,5 +66,13 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wshss565/dsh-token-guard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wshss565/dsh-token-guard/issues"
+  },
+  "homepage": "https://github.com/wshss565/dsh-token-guard#readme"
 }
