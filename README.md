@@ -414,10 +414,14 @@ DeepSeek Harness 处于 **developer preview**，官方明示会有破坏性变�
 
 ```bash
 npm test                    # 113 个测试
-npm run dump                # 自查用量（不装插件也能用）
+npm run dump# 自查用量（不装插件也能用）
 npm run preview             # 重新生成输出预览图
 npm run preview:ui          # 重新生成面板UI预览
 ```
+
+> `npm test` 走 `tools/test-runner.mjs`，由 `fs.globSync` 自行展开测试文件。
+> 不用命令行 glob 是因为它在 Windows 由 Node 展开、在 Linux 可能被 shell 展开成
+> 字面字符串——踩过一次，CI 上ubuntu 全红而 Windows 全绿。
 
 ```
 index.mjs            宿主入口：装配、命令、HTTP 路由
@@ -431,6 +435,7 @@ src/guard.mjs        超预算防护：预览与停止任务
 src/notifier.mjs     提醒判定与文案
 src/commands.mjs     /budget 命令族
 tools/dump-usage.mjs 自查用量
+tools/test-runner.mjs     跨平台测试入口（glob 自行展开）
 tools/build-preview.mjs  生成输出预览
 ```
 
