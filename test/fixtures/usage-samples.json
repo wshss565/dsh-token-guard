@@ -1,10 +1,11 @@
 {
   "_comment": "从真实 dsh 会话日志提取的 usage 样本，供 ledger/pricing/collector 测试使用。提取命令见 tools/dump-usage.mjs --json。共 20 条，覆盖多模型、多帧 zstd、字段缺失等情形。",
   "_source": {
-    "dshHome": "C:\\Users\\15040\\.dsh",
+    "dshHome": "<USER_HOME>/.dsh",
     "files": 10,
     "totalUsageRecords": 237,
-    "extractedAt": "2026-10-04"
+    "extractedAt": "2026-10-04",
+    "note": "路径已脱敏。原始样本含本机用户名，公开发布前已替换为占位符。"
   },
   "_fieldSemantics": {
     "formula": "totalTokens = inputTokens + outputTokens + cacheReadTokens",
@@ -13,22 +14,172 @@
     "unverified": "cacheWriteTokens 本机样本恒为 0，无法判断是否已计入 totalTokens，按已计入处理。"
   },
   "records": [
-    { "time": 1788872821627, "day": "2026-10-04", "seq": 2700, "model": "deepseek-v4-flash", "input": 16088, "output": 79, "cacheRead": 0, "cacheWrite": 0, "reasoning": 0, "total": 16167, "_case": "无缓存命中，cacheWrite 与 reasoning 字段存在但为 0" },
-    { "time": 1786951649297, "day": "2026-06-15", "seq": 1, "model": "deepseek-flash", "input": 814, "output": 154, "cacheRead": 8320, "cacheWrite": 0, "reasoning": 28, "total": 9288, "_case": "典型高缓存命中：cacheRead 是 input 的 10 倍" },
-    { "time": 1786951649298, "day": "2026-06-15", "seq": 2, "model": "deepseek-flash", "input": 354, "output": 104, "cacheRead": 9216, "cacheWrite": 0, "reasoning": 21, "total": 9674, "_case": "cacheRead 占比更高" },
-    { "time": 1786951649299, "day": "2026-06-15", "seq": 3, "model": "deepseek-flash", "input": 14736, "output": 377, "cacheRead": 9600, "cacheWrite": 0, "reasoning": 154, "total": 24713, "_case": "混合：input 与 cacheRead 同量级" },
-    { "time": 1786951649300, "day": "2026-06-15", "seq": 4, "model": "deepseek-flash", "input": 16587, "output": 388, "cacheRead": 24704, "cacheWrite": 0, "reasoning": 150, "total": 41679, "_case": "长会话中段，cacheRead 累积升高" },
-    { "time": 1786951649301, "day": "2026-06-15", "seq": 5, "model": "deepseek-v4-pro", "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0, "reasoning": 0, "total": 0, "_case": "全零边界：应正常累加不报错" },
-    { "time": 1786951649302, "day": "2026-06-15", "seq": 6, "model": "unknown", "input": 100, "output": 50, "cacheRead": 200, "cacheWrite": 0, "reasoning": 0, "total": 350, "_case": "模型未知：计价应回落 v4-pro 并标注 estimatedPrice" },
-    { "time": 1786951649303, "day": "2026-06-15", "seq": 7, "model": "deepseek-v4-flash", "input": 2000, "output": 300, "cacheRead": 18000, "cacheWrite": 0, "reasoning": 0, "total": 20300, "_case": "reasoningTokens 字段缺失（样本中约半数无此字段）" },
-    { "time": 1786951649304, "day": "2026-06-15", "seq": 8, "model": "deepseek-v4-flash", "input": 5000, "output": 800, "cacheRead": 45000, "cacheWrite": 0, "reasoning": 0, "total": 50800, "_case": "cacheWriteTokens 字段缺失（约半数样本无此字段）" },
-    { "time": 1786951649305, "day": "2026-06-15", "seq": 9, "model": "deepseek-flash", "input": 120, "output": 45, "cacheRead": 1200, "cacheWrite": 0, "reasoning": 12, "total": 1365, "_case": "小额度：验证不因绝对值小而丢精度" },
-    { "time": 1786951649306, "day": "2026-06-15", "seq": 10, "model": "deepseek-v4-pro", "input": 30000, "output": 1200, "cacheRead": 150000, "cacheWrite": 0, "reasoning": 800, "total": 181200, "_case": "大额高缓存：验证分三段计价与合并计价的差异显著" }
+    {
+      "time": 1788872821627,
+      "day": "2026-10-04",
+      "seq": 2700,
+      "model": "deepseek-v4-flash",
+      "input": 16088,
+      "output": 79,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "reasoning": 0,
+      "total": 16167,
+      "_case": "无缓存命中，cacheWrite 与 reasoning 字段存在但为 0"
+    },
+    {
+      "time": 1786951649297,
+      "day": "2026-06-15",
+      "seq": 1,
+      "model": "deepseek-flash",
+      "input": 814,
+      "output": 154,
+      "cacheRead": 8320,
+      "cacheWrite": 0,
+      "reasoning": 28,
+      "total": 9288,
+      "_case": "典型高缓存命中：cacheRead 是 input 的 10 倍"
+    },
+    {
+      "time": 1786951649298,
+      "day": "2026-06-15",
+      "seq": 2,
+      "model": "deepseek-flash",
+      "input": 354,
+      "output": 104,
+      "cacheRead": 9216,
+      "cacheWrite": 0,
+      "reasoning": 21,
+      "total": 9674,
+      "_case": "cacheRead 占比更高"
+    },
+    {
+      "time": 1786951649299,
+      "day": "2026-06-15",
+      "seq": 3,
+      "model": "deepseek-flash",
+      "input": 14736,
+      "output": 377,
+      "cacheRead": 9600,
+      "cacheWrite": 0,
+      "reasoning": 154,
+      "total": 24713,
+      "_case": "混合：input 与 cacheRead 同量级"
+    },
+    {
+      "time": 1786951649300,
+      "day": "2026-06-15",
+      "seq": 4,
+      "model": "deepseek-flash",
+      "input": 16587,
+      "output": 388,
+      "cacheRead": 24704,
+      "cacheWrite": 0,
+      "reasoning": 150,
+      "total": 41679,
+      "_case": "长会话中段，cacheRead 累积升高"
+    },
+    {
+      "time": 1786951649301,
+      "day": "2026-06-15",
+      "seq": 5,
+      "model": "deepseek-v4-pro",
+      "input": 0,
+      "output": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "reasoning": 0,
+      "total": 0,
+      "_case": "全零边界：应正常累加不报错"
+    },
+    {
+      "time": 1786951649302,
+      "day": "2026-06-15",
+      "seq": 6,
+      "model": "unknown",
+      "input": 100,
+      "output": 50,
+      "cacheRead": 200,
+      "cacheWrite": 0,
+      "reasoning": 0,
+      "total": 350,
+      "_case": "模型未知：计价应回落 v4-pro 并标注 estimatedPrice"
+    },
+    {
+      "time": 1786951649303,
+      "day": "2026-06-15",
+      "seq": 7,
+      "model": "deepseek-v4-flash",
+      "input": 2000,
+      "output": 300,
+      "cacheRead": 18000,
+      "cacheWrite": 0,
+      "reasoning": 0,
+      "total": 20300,
+      "_case": "reasoningTokens 字段缺失（样本中约半数无此字段）"
+    },
+    {
+      "time": 1786951649304,
+      "day": "2026-06-15",
+      "seq": 8,
+      "model": "deepseek-v4-flash",
+      "input": 5000,
+      "output": 800,
+      "cacheRead": 45000,
+      "cacheWrite": 0,
+      "reasoning": 0,
+      "total": 50800,
+      "_case": "cacheWriteTokens 字段缺失（约半数样本无此字段）"
+    },
+    {
+      "time": 1786951649305,
+      "day": "2026-06-15",
+      "seq": 9,
+      "model": "deepseek-flash",
+      "input": 120,
+      "output": 45,
+      "cacheRead": 1200,
+      "cacheWrite": 0,
+      "reasoning": 12,
+      "total": 1365,
+      "_case": "小额度：验证不因绝对值小而丢精度"
+    },
+    {
+      "time": 1786951649306,
+      "day": "2026-06-15",
+      "seq": 10,
+      "model": "deepseek-v4-pro",
+      "input": 30000,
+      "output": 1200,
+      "cacheRead": 150000,
+      "cacheWrite": 0,
+      "reasoning": 800,
+      "total": 181200,
+      "_case": "大额高缓存：验证分三段计价与合并计价的差异显著"
+    }
   ],
   "aggregateByModel": {
-    "unknown": { "turns": 96, "input": 335282, "output": 105133, "cacheRead": 4333824, "reasoning": 21552 },
-    "deepseek-flash": { "turns": 59, "input": 468158, "output": 98254, "cacheRead": 3784448, "reasoning": 0 },
-    "deepseek-v4-flash": { "turns": 82, "input": 150082, "output": 72771, "cacheRead": 4411008, "reasoning": 28776 }
+    "unknown": {
+      "turns": 96,
+      "input": 335282,
+      "output": 105133,
+      "cacheRead": 4333824,
+      "reasoning": 21552
+    },
+    "deepseek-flash": {
+      "turns": 59,
+      "input": 468158,
+      "output": 98254,
+      "cacheRead": 3784448,
+      "reasoning": 0
+    },
+    "deepseek-v4-flash": {
+      "turns": 82,
+      "input": 150082,
+      "output": 72771,
+      "cacheRead": 4411008,
+      "reasoning": 28776
+    }
   },
   "aggregateTotal": {
     "turns": 237,
@@ -41,18 +192,62 @@
     "_note": "取自 ~/.dsh/.dshw-usage.json，用于回归验证计价公式量级。注意 tokens 口径可能与本fixture 不同（含缓存、不含输出），对不上需能解释原因。",
     "file": "~/.dsh/.dshw-usage.json",
     "events": [
-      { "day": "2026-10-03", "model": "deepseek-flash", "cost": 0.15567484, "tokens": 524482 },
-      { "day": "2026-10-03", "model": "deepseek-flash", "cost": 0.07564376, "tokens": 327984 },
-      { "day": "2026-10-03", "model": "deepseek-flash", "cost": 0.348532, "tokens": 2424812 },
-      { "day": "2026-10-03", "model": "deepseek-flash", "cost": 0.17762992, "tokens": 1298656 },
-      { "day": "2026-10-03", "model": "deepseek-flash", "cost": 0.20011256, "tokens": 752962 }
+      {
+        "day": "2026-10-03",
+        "model": "deepseek-flash",
+        "cost": 0.15567484,
+        "tokens": 524482
+      },
+      {
+        "day": "2026-10-03",
+        "model": "deepseek-flash",
+        "cost": 0.07564376,
+        "tokens": 327984
+      },
+      {
+        "day": "2026-10-03",
+        "model": "deepseek-flash",
+        "cost": 0.348532,
+        "tokens": 2424812
+      },
+      {
+        "day": "2026-10-03",
+        "model": "deepseek-flash",
+        "cost": 0.17762992,
+        "tokens": 1298656
+      },
+      {
+        "day": "2026-10-03",
+        "model": "deepseek-flash",
+        "cost": 0.20011256,
+        "tokens": 752962
+      }
     ],
-    "history": { "2026-10-03": 0.72, "2026-10-04": 0 }
+    "history": {
+      "2026-10-03": 0.72,
+      "2026-10-04": 0
+    }
   },
   "dayBoundaryCases": [
-    { "_case": "本地 23:59:59.999 归入当天", "ts": 1788873599999, "expectDay": "2026-09-30" },
-    { "_case": "本地 00:00:00.000 归入次日", "ts": 1788873600000, "expectDay": "2026-10-01" },
-    { "_case": "跨月", "ts": 1785600000000, "expectDay": "2026-09-01" },
-    { "_case": "跨年", "ts": 1767225600000, "expectDay": "2026-01-01" }
+    {
+      "_case": "本地 23:59:59.999 归入当天",
+      "ts": 1788873599999,
+      "expectDay": "2026-09-30"
+    },
+    {
+      "_case": "本地 00:00:00.000 归入次日",
+      "ts": 1788873600000,
+      "expectDay": "2026-10-01"
+    },
+    {
+      "_case": "跨月",
+      "ts": 1785600000000,
+      "expectDay": "2026-09-01"
+    },
+    {
+      "_case": "跨年",
+      "ts": 1767225600000,
+      "expectDay": "2026-01-01"
+    }
   ]
 }

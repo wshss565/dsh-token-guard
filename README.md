@@ -1,6 +1,12 @@
+[![CI](https://github.com/your-name/dsh-token-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/your-name/dsh-token-guard/actions/workflows/ci.yml)
+[![node](https://img.shields.io/badge/node-%3E%3D22.15-5FA04E)](https://nodejs.org)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
+<!-- 上面的徽章地址里your-name 会在 node tools/setup-repo.mjs 执行时替换成真实用户名 -->
+
 # dsh-token-guard
 
->给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（`dsh`）用的每日token 预算管控：**设上限、超阈值提醒、每天自动清零**。
+> 给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（`dsh`）用的每日token 预算管控：**设上限、超阈值提醒、每天自动清零**。
 
 ```
 /budget
