@@ -11,6 +11,19 @@ import { dispatch } from '../src/commands.mjs'
 import { exportPath } from '../src/ledger.mjs'
 
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
+// bj(y, m, d, h, min) → 「北京时间某时刻」对应的 Unix 毫秒。
+//
+// ★ 必须与 pricing.mjs 的时段口径一致：时段固定 UTC+8
+//   （DeepSeek 官方规则，见 pricing.mjs 文件头说明）。
+//   因此这里用 Date.UTC(y, m-1, d, h-8, min)换算——
+//   减8 再按 UTC 解释，结果就是「北京时间 h 点」。
+//
+//   曾改成 new Date(y, m-1, d, h, min)（跟随机器本地时区），
+//   本地 UTC+8 跑得过，但 CI 的 ubuntu runner 是 UTC 时，
+//   时段判定与测试期望对不上，且与产品语义矛盾。
+//
+//   localDateStr() 跟随本地时区是对的——「预算日界」按用户当地零点算；
+//   但「时段」由官方规则固定，不跟随机器时区。两者语义不同，别混用。
 const bj = (y, m, d, h, min = 0) => Date.UTC(y, m - 1, d, h - 8, min)
 
 /** 造一个可控的账本 */

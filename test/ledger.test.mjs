@@ -12,6 +12,19 @@ import { costOfDay, totalTokens, newDay } from '../src/threshold.mjs'
 import { decodeZstdFrames, normalizeMessage } from '../src/collector.mjs'
 
 const tmp = () => mkdtempSync(join(tmpdir(), 'tg-'))
+// bj(y, m, d, h, min) → 「北京时间某时刻」对应的 Unix 毫秒。
+//
+// ★ 必须与 pricing.mjs 的时段口径一致：时段固定 UTC+8
+//   （DeepSeek 官方规则，见 pricing.mjs 文件头说明）。
+//   因此这里用 Date.UTC(y, m-1, d, h-8, min)换算——
+//   减8 再按 UTC 解释，结果就是「北京时间 h 点」。
+//
+//   曾改成 new Date(y, m-1, d, h, min)（跟随机器本地时区），
+//   本地 UTC+8 跑得过，但 CI 的 ubuntu runner 是 UTC 时，
+//   时段判定与测试期望对不上，且与产品语义矛盾。
+//
+//   localDateStr() 跟随本地时区是对的——「预算日界」按用户当地零点算；
+//   但「时段」由官方规则固定，不跟随机器时区。两者语义不同，别混用。
 const bj = (y, m, d, h, min = 0) => Date.UTC(y, m - 1, d, h - 8, min)
 
 function rec(time, over = {}) {
@@ -23,13 +36,33 @@ function rec(time, over = {}) {
 }
 
 // ─────────────────────────── 日界 ───────────────────────────
+//
+// ★ localDateStr 跟随**运行机器的本地时区**（预算日界按用户当地零点算），
+//   而 bj() 构造的是**北京时间**（与 pricing.mjs 的时段口径一致）。
+//   两者语义不同 —— 用 bj() 测localDateStr 会在非UTC+8 环境下偏一天。
+//   （实际发生：CI 的 ubuntu runner 是 UTC，
+//     「跨月与跨年」断言实得 2026-09-30、期望 2026-10-01。）
+//
+//   所以本节一律用 local(y, m, d, h, min) 构造本地时刻。
+const local = (y, m, d, h = 0, min = 0) => new Date(y, m - 1, d, h, min, 0, 0).getTime()
+
 test('localDateStr: 用本地时区，不用 UTC', () => {
-  const ts = bj(2026, 10, 5, 10, 30)
-  assert.equal(localDateStr(ts), '2026-10-05')
+  // 断言重点是「不走 toISOString」——若实现误用 UTC，
+  // 同一个时刻会被推到前一天或后一天。
+  //
+  // 选当地时间 10:00：这个钟点在 UTC-12 ~ UTC+14 的所有时区里
+  // 都落在同一个日历日，因此断言与运行环境时区无关。
+  // （若改成 Date.UTC(2026, 9, 5, 0, 0) 这种「跨日敏感」的时刻，
+  //   在 UTC 与 UTC+8 下会给出不同日期，无法同时通过。）
+  assert.equal(localDateStr(local(2026, 10, 5, 10, 0)), '2026-10-05')
+
+  // 再验一次「本地午夜」——这才是预算日界的语义
+  assert.equal(localDateStr(local(2026, 10, 5, 0, 0)), '2026-10-05')
 })
+
 test('localDateStr: 跨月与跨年', () => {
-  assert.equal(localDateStr(bj(2026, 10, 1, 0, 0)), '2026-10-01')
-  assert.equal(localDateStr(bj(2026, 1, 1, 0, 0)), '2026-01-01')
+  assert.equal(localDateStr(local(2026, 10, 1, 0, 0)), '2026-10-01')
+  assert.equal(localDateStr(local(2026, 1, 1, 0, 0)), '2026-01-01')
 })
 test('localDateStr: 23:59:59.999 与次日 00:00 分属两天', () => {
   // 月份参数从 0 开始：9 = 10月，10 = 11月
