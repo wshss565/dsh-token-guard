@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: 测试 (Node ${{ matrix.node }})
+    name: 测试 (Node ${{ matrix.node }} · TZ=${{ matrix.tz }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -16,6 +16,15 @@ jobs:
         # 22.15+ 是硬性要求：用到 node:zlib 的 zstd 支持
         os: [ubuntu-latest, windows-latest]
         node: ['22.15', '22.x', '24.x']
+        # ★ 显式跑多个时区。
+        #   ubuntu runner 是 UTC，本地开发是 UTC+8，
+        #   「时段判定固定 UTC+8」与「预算日界跟随本地时区」这两套语义
+        #   混用时，只在特定时区才暴露问题（踩过一次：跨月断言在 UTC 下差一天）。
+        #   这里固定 TZ 而非依赖 runner 默认值，结果可复现。
+        tz: ['Asia/Shanghai', 'UTC']
+
+    env:
+      TZ: ${{ matrix.tz }}
 
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +37,13 @@ jobs:
         run: |
           node -v
           npm -v
+          node -e "
+            const off = new Date().getTimezoneOffset();
+            console.log('TZ =', process.env.TZ ?? '(未设置)', '| offset =', off, '分钟');
+            // offset 是实际生效值，比process.env.TZ 更可靠
+            // （某些平台上 TZ 名存在但不被Date 采纳）
+            if (!Number.isFinite(off)) { console.error('无法读取时区偏移'); process.exit(1) }
+          "
 
       # 插件零运行时依赖，这一步能提前发现 peerDependencies 写错等问题
       - name: 安装
