@@ -59,6 +59,7 @@
     "LICENSE",
     "README.md",
     "docs/COMPATIBILITY.md",
+    "docs/RELEASING.md",
     "docs/preview.png",
     "docs/ui-preview.png",
     "docs/preview.template.html",

@@ -439,68 +439,20 @@ tools/test-runner.mjs     跨平台测试入口（glob 自行展开）
 tools/build-preview.mjs  生成输出预览
 ```
 
-## 发布前必做
+## 发布状态
 
-代码层面已完成，剩下的是**只能靠真机确认**的部分。
+代码层面已完成。以下事项**只有真机能确认**，详见 [`docs/RELEASING.md`](./docs/RELEASING.md)。
 
-### 1. 建仓与推送
-
-仓库已初始化（分支 `main`）。在 GitHub 上新建**空仓库**（不要勾选 README / .gitignore / License），然后一条命令完成推送：
-
-```bash
-node tools/setup-repo.mjs <你的GitHub用户名>            # HTTPS 推送（会弹浏览器登录）
-node tools/setup-repo.mjs <你的GitHub用户名> --ssh      # SSH 推送（需先配置密钥）
-node tools/setup-repo.mjs <你的GitHub用户名> --dry-run # 只预览，不做任何改动
-```
-
-脚本会自动填 `package.json` 元数据、替换 README 徽章地址、设置 remote、提交并推送。
-
-#### 若要用 SSH
-
-```bash
-# 1. 生成密钥（回车接受默认路径，会问 passphrase，可留空）
-ssh-keygen -t ed25519 -C "你的邮箱"
-
-# 2. 复制公钥
-cat ~/.ssh/id_ed25519.pub
-```
-
-把输出粘到 **GitHub → Settings → SSH and GPG keys → New SSH key**，然后验证：
-
-```bash
-ssh -T git@github.com
-# 成功时会显示：Hi <用户名>! You've successfully authenticated...
-```
-
-看到这行再推送，就不会卡在 `Permission denied (publickey)`。
-
-- 打 **`dsh-plugin`** topic —— 官方靠这个标签做插件发现，漏了等于没发布
-- 仓库描述建议：`给 DeepSeek Harness 用的每日 token 预算管控：设上限、超阈值提醒、时段感知、超预算关闭任务`
-- 仓库设置里开启 Issues / Discussions
-
-### 2. 装上 dsh 实测五件事
-
-按优先级排列，前三项不通过则核心功能不可用：
-
-| # | 验证项 | 不通过的后果 |
+| # | 待验证 | 不通过的后果 |
 |---|---|---|
-| 1 | `agents` 服务的 `list()` / `get()` / `agent.cancel` / `whenIdle` 形状 | `/budget plan` 与 `stop` 不可用 |
-| 2 |客户端 slot 名 `conversation.input.dock`（备选 `settings.section`） | 面板挂不出来，只剩斜杠命令 |
-| 3 | HTTP 路由前缀 `/api/token-guard` 是否与宿主冲突 | 客户端拿不到数据 |
-| 4 | `session/event` 的实际触发时机 | 退回 60s 轮询，功能不失效但延迟高 |
-| 5 | `webServer.register` 的 disposer 返回约定 | 插件卸载后路由残留 |
+| 1 | `agents` 服务 API 形状 | `/budget plan` 与 `stop` 不可用 |
+| 2 | 客户端 slot 名 `conversation.input.dock` | 面板挂不出来，只剩斜杠命令 |
+| 3 | HTTP 路由前缀 `/api/token-guard` | 客户端拿不到数据 |
+| 4 | `session/event` 触发时机 | 退回 60s轮询，功能不失效但延迟高 |
+| 5 | 高峰时段计价对账 | `×1` 系数仍只有文档依据 |
 
-`cordis_inspect_list` 可列出实际服务与槽位。
-
-### 3. 补高峰时段的计价对账
-
-本机 720 条样本**全部落在空闲时段**（0 条高峰，都在深夜与周末产生）。因此高峰时段的 `×1` 系数**仅有官方文档依据，未经实测**。
-
-找一个工作日白天（9:00–12:00 或 14:00–18:00）用一次 dsh，然后跑 `npm run dump` 与官方 `.dshw-usage.json` 对账，补上这条验证。
-
-### 4. 补真机截图
-
-`docs/preview.png` 与 `docs/ui-preview.png` 当前都是**输出/形态预览**，由真实数据渲染但非真机截图。装上 dsh 后应替换。
+第 5 项最关键：目前 **720 条真实样本全部落在空闲时段**（深夜与周末产生），
+高峰系数从未被实测。可用 [Issue 模板](.github/ISSUE_TEMPLATE/config.yml) 提交对账数据。
 
 ## License
 
